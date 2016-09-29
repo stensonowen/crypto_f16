@@ -1,0 +1,6 @@
+[package]
+name = "crypto_f16"
+version = "0.1.0"
+authors = ["owen <stensonowen@gmail.com>"]
+
+[dependencies]
