@@ -12,15 +12,16 @@
 
 pub mod math {
     extern crate num;
-    use self::num::traits::Num;
+    use self::num::traits::{Num, NumCast};
+    use std::cmp::PartialOrd;
 
-    use std::cmp;
     use std::mem;
 
+    //Define the type that inflexible/non-generic functions return
+    pub type Output = i32;
 
-    pub fn gcd<T>(x: T, y: T) -> T 
-        //where T: Rem<Output=T> + Zero + cmp::Ord + Copy {
-        where T: Num + cmp::Ord + Copy {
+
+    pub fn gcd<T: Num + PartialOrd + Copy>(x: T, y: T) -> T {
         // Euclidean Algorithm
         // generic over all primitive numeric types
         if x.is_zero() {
@@ -28,14 +29,12 @@ pub mod math {
         } else if y.is_zero() {
             x 
         } else {
-            let (a, b) = (cmp::max(x,y), cmp::min(x,y));
+            let (a,b) = if x>y { (x,y) } else { (y,x) };
             gcd(b, a%b)
         }
     }
 
-    //pub fn coprime<T>(x: T, y: T) -> bool  
-    //    where T: Rem<Output=T> + Zero + One + cmp::Ord + Copy {
-    pub fn coprime<T: Num + cmp::Ord + Copy>(x: T, y: T) -> bool { 
+    pub fn coprime<T: Num + PartialOrd + Copy>(x: T, y: T) -> bool { 
         gcd(x,y) == T::one()
     }
 
@@ -52,18 +51,22 @@ pub mod math {
         // pretty sure this could yield 1/a such that a*1/a = (n-1) mod n
     }*/
 
-        pub fn ext_euclidean_alg(a: i32, b: i32) -> (i32, i32) {
-    //pub fn ext_euclidean_alg(a: T, b: T) -> (i32, i32) {
-    //    where T: Zero + One {
+    //do math on i32s. If numbers are weaker, convert up; if they're stronger, panic
+    //pub fn ext_euclidean_alg(a: i32, b: i32) -> (i32, i32) {
+    pub fn ext_euclidean_alg<T: NumCast>(a: T, b: T) -> (Output, Output) {
         //returns (x,y) such that ax+by = gcd(a,b)
         //return gcd as well (i.e. 3-tuple)? 
-        //stallings p99
         /* should not be generic (in ret type, at least), because 
          * results can exceed input, which would be problematic */
+
+        //convert a and b to their i32 equivalents
+        //panic! if they're too big
+        //do all the math on i32s, because it's fast and defined
+        let a: Output = NumCast::from(a).unwrap();
+        let b: Output = NumCast::from(b).unwrap();
         let in_order = a > b;   //used to determine which is x vs y
         let (mut x_old, mut x_new) = (1, 0);
         let (mut y_old, mut y_new) = (0, 1);
-        //let (mut r_old, mut r_new) = (cmp::max(a,b), cmp::min(a,b));
         let (mut r_old, mut r_new) = if in_order { (a,b) } else { (b,a) };
         let mut q: i32;
 
@@ -95,7 +98,6 @@ pub mod math {
 
         //if in_order { (x_old, y_old) } else { (y_old, x_old) }
         if in_order { (x_new, y_new) } else { (y_new, x_new) }
-
     }
 
 
