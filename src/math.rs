@@ -2,12 +2,13 @@
 
 
 pub mod math {
+    extern crate num;
     use std::cmp;
     use std::mem;
 
     pub fn gcd(x: u32, y: u32) -> u32 {
         // Euclidean Algorithm
-        // only accept nonnegative numbers
+        // only accept nonnegative numbers (?)
         if x == 0 {
             y
         } else if y == 0 {
@@ -18,18 +19,26 @@ pub mod math {
         }
     }
 
-    pub fn coprime(x: u32, y: u32) -> bool {
-        gcd(x,y) == 1
+    pub fn coprime(x: i32, y: i32) -> bool {
+        //just make absolute value?
+        //is that valid?
+        //gcd(x,y) == 1
+        gcd_signed(x,y) == 1
     }
 
-    pub fn mult_inverse(a: u32, n: u32) -> u32 {
-        //find b=a^-1 such that b*a ≡ 1 mod n
-        assert!(coprime(a,n));
+    pub fn gcd_signed(x: i32, y: i32) -> u32 {
+        //gcd(a,b) = gcd(|a|,|b|)
+        //better way to do this? currently i32::min_value will panic
+        gcd(x.abs() as u32, y.abs() as u32)
+    }
 
+    pub fn mult_inverse(a: i32, n: i32) -> i32 {
+        //find b=a^-1 such that b*a ≡ 1 mod n
+        //assert!(coprime(a,n));
 
         //place holder
-        assert!(false);
-        0
+        let (b, _) = ext_euclidean_alg(a, n);
+        b
     }
 
     pub fn ext_euclidean_alg(a: i32, b: i32) -> (i32, i32) {
@@ -74,5 +83,25 @@ pub mod math {
 
     }
 
+
+    use self::num::traits::Zero;
+    use std::ops::Rem;
+    //pub fn add<T>(x: T, y: T) -> T where T: Add<Output=T> {
+    //pub fn add<T: Add<Output=T>>(x: T, y: T) -> T {
+    //pub fn add<T>(x: T, y: T) -> T where T: Add<Output=T> + Rem {
+
+    pub fn gcd_generic<T>(x: T, y: T) -> T 
+        where T: Rem<Output=T> + Zero + cmp::Ord + Copy {
+        // Euclidean Algorithm
+        // generic over all primitive numeric types
+        if x.is_zero() {
+            y
+        } else if y.is_zero() {
+            x 
+        } else {
+            let (a, b) = (cmp::max(x,y), cmp::min(x,y));
+            gcd_generic(b, a%b)
+        }
+    }
 }
 
