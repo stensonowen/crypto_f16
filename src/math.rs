@@ -1,17 +1,31 @@
 // misc math stuff
 
+/* Try to use generics as much as possible;
+ *  However, generic functions can only return a generic type
+ *  if the output is strictly less than (and similarly signed)
+ *  compared to the inputs.
+ *      Problematic examples: 100u8 * 100u8, 2u32 - 5u32, etc.
+ *  Otherwise return i64s? i32s?
+ */
+
+
 
 pub mod math {
     extern crate num;
+    use self::num::traits::Num;
+
     use std::cmp;
     use std::mem;
 
-    pub fn gcd(x: u32, y: u32) -> u32 {
+
+    pub fn gcd<T>(x: T, y: T) -> T 
+        //where T: Rem<Output=T> + Zero + cmp::Ord + Copy {
+        where T: Num + cmp::Ord + Copy {
         // Euclidean Algorithm
-        // only accept nonnegative numbers (?)
-        if x == 0 {
+        // generic over all primitive numeric types
+        if x.is_zero() {
             y
-        } else if y == 0 {
+        } else if y.is_zero() {
             x 
         } else {
             let (a, b) = (cmp::max(x,y), cmp::min(x,y));
@@ -19,32 +33,33 @@ pub mod math {
         }
     }
 
-    pub fn coprime(x: i32, y: i32) -> bool {
-        //just make absolute value?
-        //is that valid?
-        //gcd(x,y) == 1
-        gcd_signed(x,y) == 1
+    //pub fn coprime<T>(x: T, y: T) -> bool  
+    //    where T: Rem<Output=T> + Zero + One + cmp::Ord + Copy {
+    pub fn coprime<T: Num + cmp::Ord + Copy>(x: T, y: T) -> bool { 
+        gcd(x,y) == T::one()
     }
 
-    pub fn gcd_signed(x: i32, y: i32) -> u32 {
-        //gcd(a,b) = gcd(|a|,|b|)
-        //better way to do this? currently i32::min_value will panic
-        gcd(x.abs() as u32, y.abs() as u32)
-    }
-
+    /*
     pub fn mult_inverse(a: i32, n: i32) -> i32 {
         //find b=a^-1 such that b*a ≡ 1 mod n
-        //assert!(coprime(a,n));
-
         //place holder
-        let (b, _) = ext_euclidean_alg(a, n);
-        b
-    }
+        assert!(coprime(a,n));
+        assert!(false);
+        0
+        //let (b, _) = ext_euclidean_alg(a, n);
+        //b
+        //this shouldn't work because we don't know if |ax|>|by| or |ax|<|by|
+        // pretty sure this could yield 1/a such that a*1/a = (n-1) mod n
+    }*/
 
-    pub fn ext_euclidean_alg(a: i32, b: i32) -> (i32, i32) {
+        pub fn ext_euclidean_alg(a: i32, b: i32) -> (i32, i32) {
+    //pub fn ext_euclidean_alg(a: T, b: T) -> (i32, i32) {
+    //    where T: Zero + One {
         //returns (x,y) such that ax+by = gcd(a,b)
         //return gcd as well (i.e. 3-tuple)? 
         //stallings p99
+        /* should not be generic (in ret type, at least), because 
+         * results can exceed input, which would be problematic */
         let in_order = a > b;   //used to determine which is x vs y
         let (mut x_old, mut x_new) = (1, 0);
         let (mut y_old, mut y_new) = (0, 1);
@@ -57,7 +72,8 @@ pub mod math {
         println!("{},\t{},\t{},\t{}", r_old, '_', x_old, y_old);
         println!("{},\t{},\t{},\t{}", r_new, '_', x_new, y_new);
 
-        while r_new != 0 {
+        //while r_new != 0 {
+        loop {
             //r_old gets removed, r_new replaces it, calculate new r_new
             mem::swap(&mut r_old, &mut r_new);
             q = r_new / r_old;      // read: r_old div r_new
@@ -65,7 +81,7 @@ pub mod math {
 
             //replace `while` loop with this?
             //a little clunky but technically faster?
-            //if r_new == 0 { return (x_new, y_new) }
+            if r_new == 0 { break }
 
             //x_old removed, x_new replaces x_old, new x_new
             mem::swap(&mut x_old, &mut x_new);
@@ -77,31 +93,11 @@ pub mod math {
             println!("{},\t{},\t{},\t{}", r_new, q, x_new, y_new);
         }
 
-        //(x_new, y_new)
-        //(x_old, y_old)
-        if in_order { (x_old, y_old) } else { (y_old, x_old) }
+        //if in_order { (x_old, y_old) } else { (y_old, x_old) }
+        if in_order { (x_new, y_new) } else { (y_new, x_new) }
 
     }
 
 
-    use self::num::traits::Zero;
-    use std::ops::Rem;
-    //pub fn add<T>(x: T, y: T) -> T where T: Add<Output=T> {
-    //pub fn add<T: Add<Output=T>>(x: T, y: T) -> T {
-    //pub fn add<T>(x: T, y: T) -> T where T: Add<Output=T> + Rem {
-
-    pub fn gcd_generic<T>(x: T, y: T) -> T 
-        where T: Rem<Output=T> + Zero + cmp::Ord + Copy {
-        // Euclidean Algorithm
-        // generic over all primitive numeric types
-        if x.is_zero() {
-            y
-        } else if y.is_zero() {
-            x 
-        } else {
-            let (a, b) = (cmp::max(x,y), cmp::min(x,y));
-            gcd_generic(b, a%b)
-        }
-    }
 }
 
