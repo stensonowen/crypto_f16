@@ -37,9 +37,22 @@ mod tests {
         let (x,y) = math::ext_euclidean_alg(a, b);
         assert_eq!(x*a + y*b, 2);
 
+        //u64s sometimes don't fit into i32s, but they can (only panic if overflow)
+        let (a,b): (u64,u64) = (67571, 42578);
+        let (x,y) = math::ext_euclidean_alg(a, b);
+        assert_eq!(x*(a as i32) + y*(b as i32), 1);
+
         let (a,b) = (1234, 4321);
         let (x,y) = math::ext_euclidean_alg(a, b);
         assert_eq!(x*a + y*b, 1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn ext_euclid_alg_exceed() {
+        //can't cast a large u64 down to an i32 
+        let (a,b): (u64,u64) = (1099511627776, 549755813888);   // 2**40, 2**39 
+        math::ext_euclidean_alg(a, b);
     }
 
 

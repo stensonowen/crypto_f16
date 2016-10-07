@@ -18,6 +18,7 @@ pub mod math {
     use std::mem;
 
     //Define the type that inflexible/non-generic functions return
+    //panic! when this leads to inflexibility
     pub type Output = i32;
 
 
@@ -51,52 +52,39 @@ pub mod math {
         // pretty sure this could yield 1/a such that a*1/a = (n-1) mod n
     }*/
 
-    //do math on i32s. If numbers are weaker, convert up; if they're stronger, panic
-    //pub fn ext_euclidean_alg(a: i32, b: i32) -> (i32, i32) {
     pub fn ext_euclidean_alg<T: NumCast>(a: T, b: T) -> (Output, Output) {
         //returns (x,y) such that ax+by = gcd(a,b)
         //return gcd as well (i.e. 3-tuple)? 
-        /* should not be generic (in ret type, at least), because 
-         * results can exceed input, which would be problematic */
 
-        //convert a and b to their i32 equivalents
-        //panic! if they're too big
-        //do all the math on i32s, because it's fast and defined
-        let a: Output = NumCast::from(a).unwrap();
-        let b: Output = NumCast::from(b).unwrap();
+        let a: Output = NumCast::from(a).unwrap();  //convert input to i32 vals
+        let b: Output = NumCast::from(b).unwrap();  //panic if they're too big
         let in_order = a > b;   //used to determine which is x vs y
         let (mut x_old, mut x_new) = (1, 0);
         let (mut y_old, mut y_new) = (0, 1);
         let (mut r_old, mut r_new) = if in_order { (a,b) } else { (b,a) };
         let mut q: i32;
 
-        println!("");
-        println!("r_i,\tq_i,\tx_i,\ty_i");
+        println!("\nr_i,\tq_i,\tx_i,\ty_i");
         println!("{},\t{},\t{},\t{}", r_old, '_', x_old, y_old);
         println!("{},\t{},\t{},\t{}", r_new, '_', x_new, y_new);
 
-        //while r_new != 0 {
         loop {
             //r_old gets removed, r_new replaces it, calculate new r_new
             mem::swap(&mut r_old, &mut r_new);
             q = r_new / r_old;      // read: r_old div r_new
             r_new = r_new % r_old;  // read: r_old mod r_new
 
-            //replace `while` loop with this?
-            //a little clunky but technically faster?
             if r_new == 0 { break }
 
             //x_old removed, x_new replaces x_old, new x_new
             mem::swap(&mut x_old, &mut x_new);
             x_new = x_new - x_old * q;
-            //same for y
             mem::swap(&mut y_old, &mut y_new);
             y_new = y_new - y_old * q;
 
             println!("{},\t{},\t{},\t{}", r_new, q, x_new, y_new);
         }
 
-        //if in_order { (x_old, y_old) } else { (y_old, x_old) }
         if in_order { (x_new, y_new) } else { (y_new, x_new) }
     }
 
