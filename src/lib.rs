@@ -3,9 +3,32 @@
 pub mod math;
 
 
+
 #[cfg(test)]
 mod tests {
     use super::math::math;
+
+
+    #[test]
+    #[ignore]   //big numbers: can be slow (~10 seconds)
+    fn prime_factorize() {
+        fn is_prime_naive(n: u32) -> bool {
+            n > 1 && !(2 .. 1 + n/2).into_iter().any(|i| n%i==0) 
+        }
+        fn reform_from_prime_factors(f: Vec<(u32,u32)>) -> u32 {
+            f.into_iter().fold(1u32, |acc, (n,e)| acc*n.pow(e))
+        }
+
+        let vals = vec![22176180, 137235605, 912673, 47];
+        for i in vals {
+            let v = math::prime_factors(i);
+            println!("\n{:?}", v);
+            for &(j,_) in &v {
+                assert!(is_prime_naive(j));
+            }
+            assert_eq!(reform_from_prime_factors(v), i);
+        }
+    }
 
     #[test]
     fn gcd_base() {
