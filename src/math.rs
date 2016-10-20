@@ -12,7 +12,7 @@
 
 pub mod math {
     extern crate num;
-    use self::num::traits::{Num, NumCast};
+    use self::num::traits::{Num, NumCast, Unsigned};
     use std::cmp::PartialOrd;
 
     use std::mem;
@@ -22,9 +22,27 @@ pub mod math {
     pub type Output = i32;
 
 
-    pub fn gcd<T: Num + PartialOrd + Copy>(x: T, y: T) -> T {
+    //misc math functions that don't exist or aren't generic
+    pub fn modulo<T: Num+Copy>(a: T, b: T) -> T {
+        ((a%b)+b)%b
+    }
+    pub fn abs<T: Num+PartialOrd>(a: T) -> T {
+        if a >= T::zero() {
+            a
+        } else {
+            a * (T::zero() - T::one())
+        }
+    }
+
+    pub fn gcd<T: Num + PartialOrd + Copy>(mut x: T, mut y: T) -> T {
         // Euclidean Algorithm
         // generic over all primitive numeric types
+        //println!("gcd( {:?} , {:?} )", x, y);
+        //let a = x * (T::zero() - T::one());
+        //if inputs are negative, take the absolute value
+        x = abs(x);
+        y = abs(y);
+
         if x.is_zero() {
             y
         } else if y.is_zero() {
@@ -39,6 +57,46 @@ pub mod math {
         gcd(x,y) == T::one()
     }
 
+    //pub fn mult_inverse_signed<S: NumCast, T: NumCast+Unsigned>(a: S, n: T) -> Output {
+        //modulus must be positive
+        //for some of our logic we're going to assume `a` is also positive:
+        //
+        //make `a` positive type T
+    pub fn mult_inverse_signed<S: NumCast+Copy+PartialOrd+Num, 
+                      T: Unsigned+NumCast+Copy+PartialOrd+Num>(a: S, n: T) -> Output {
+        
+        let a_: Output = NumCast::from(a).unwrap();  // might be negative
+        let n_: Output = NumCast::from(n).unwrap();
+        let a__ = modulo(a_, n_);
+        assert!(a__ > 0);
+
+        let _a: u32 = NumCast::from(a__).unwrap();
+        let _n: u32 = NumCast::from(n_).unwrap();
+
+        mult_inverse(_a, _n)
+    }
+
+    //pub fn mult_inverse<T: NumCast+Unsigned>(a: T, n: T) -> Output {
+    pub fn mult_inverse<T: NumCast+Unsigned+Copy+PartialOrd>(a: T, n: T) -> Output {
+        //find some b=1/a such that a*b ≡ 1 (mod n)
+        //inputs must be coprime
+        assert!(coprime(a,n));
+        //perform extended euclidean algorithm
+        let (x,_) = ext_euclidean_alg(a,n);
+        //make sure we can cast modulus to the Output type
+        let n: Output = NumCast::from(n).unwrap();
+        // x*a + y*p = 1
+        // thus x*a (mod n) = 1 or -1
+        if x >= 0 { 
+            // then x*a is positive and y*p is negative
+            // so x*a (mod n) ≡ 1
+            x 
+        } else { 
+            // then x*a is negative and y*p is positive
+            // so x*a (mod n) < 0; wrap around by adding `n`
+            n+x
+        }
+    }
     /*
     pub fn mult_inverse(a: i32, n: i32) -> i32 {
         //find b=a^-1 such that b*a ≡ 1 mod n
@@ -64,9 +122,9 @@ pub mod math {
         let (mut r_old, mut r_new) = if in_order { (a,b) } else { (b,a) };
         let mut q: i32;
 
-        //println!("\nr_i,\tq_i,\tx_i,\ty_i");
-        //println!("{},\t{},\t{},\t{}", r_old, '_', x_old, y_old);
-        //println!("{},\t{},\t{},\t{}", r_new, '_', x_new, y_new);
+        println!("\nr_i,\tq_i,\tx_i,\ty_i");
+        println!("{},\t{},\t{},\t{}", r_old, '_', x_old, y_old);
+        println!("{},\t{},\t{},\t{}", r_new, '_', x_new, y_new);
 
         loop {
             //r_old gets removed, r_new replaces it, calculate new r_new
@@ -82,7 +140,7 @@ pub mod math {
             mem::swap(&mut y_old, &mut y_new);
             y_new = y_new - y_old * q;
 
-            //println!("{},\t{},\t{},\t{}", r_new, q, x_new, y_new);
+            println!("{},\t{},\t{},\t{}", r_new, q, x_new, y_new);
         }
 
         if in_order { (x_new, y_new) } else { (y_new, x_new) }
@@ -132,6 +190,8 @@ pub mod math {
         assert!(false);
         vec![]
     }
+
+    //fn entrope()
 
 }
 

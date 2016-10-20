@@ -1,12 +1,15 @@
 //#![feature(test)]     //benchmark using nightly
 
 pub mod math;
+//mod des;
+extern crate num;
 
 
 
 #[cfg(test)]
 mod tests {
     use super::math::math;
+    use super::num::traits::NumCast;
 
 
     #[test]
@@ -78,6 +81,46 @@ mod tests {
         math::ext_euclidean_alg(a, b);
     }
 
+
+    #[test]
+    fn modular_inverse() {
+        //be super sure
+        //input tests: random coprime pairs 
+        let v: Vec<(u32,u32)> = vec![(5,24),    (121, 133), (97,31),    (100, 199), (24,49), 
+                                    (35, 761),  (723, 997), (927, 718), (153, 566), (256, 27), 
+                                    (394, 805), (173, 386), (768, 391), (399, 59),  (14, 885), 
+                                    (385, 509), (357, 143), (272, 617), (509, 847), (218, 461), 
+                                    (718, 413), (725, 482), (298, 223), (533, 250), (478, 383), 
+                                    (863, 641), (931, 324), (221, 324), (824, 537), (409, 203), 
+                                    (526, 231), (452, 601), (688, 547), (721, 274), (722, 629), 
+                                    (169, 165), (735, 703), (843, 407), (581, 876), (909, 989)];
+        for (a,p) in v {
+            let y = math::mult_inverse(a,p);
+            assert!(y > 0);
+            let x: u32 = NumCast::from(y).unwrap();
+            assert_eq!((a*x)%p, 1);
+        }
+    }
+
+    #[test]
+    fn modular_inverse_signed() {
+        let v: Vec<(i32,u32)> = vec![(-219, 524), (499, 650), (817, 333),  (-913, 30), 
+                                    (-973, 746),  (143, 128), (-995, 497), (-18, 521), 
+                                    (-6, 235),    (769, 573), (-801, 614), (-764, 285), 
+                                    (-373, 297),  (952, 815), (699, 784),  (255, 922)];
+
+        for (a,p) in v {
+            println!("TEST!");
+            let y = math::mult_inverse_signed(a,p);
+            assert!(y > 0);
+            let x: i32 = NumCast::from(y).unwrap();
+            println!("guessing solution: a*y ≡ 1 (mod p)  ↔  {}*y ≡ 1 (mod {})  ↔  {}*{} ≡ 1 (mod {})", a, p, a, x, p);
+            //println!("a*x %p: {}", (a*x)%p as i32);
+            //println!("__{}", (-219*457)%524);
+            //println!("-219*457 %' 524:  {}", math::modulo(-219*457, 524));
+            assert_eq!((a*x)%p as i32, 1);
+        }
+    }
 
 
     //  MISC BENCHMARKS:
