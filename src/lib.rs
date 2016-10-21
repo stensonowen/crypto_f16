@@ -13,6 +13,16 @@ mod tests {
 
 
     #[test]
+    fn mod_signed() {
+        use math::math::Mod;
+        assert_eq!(5%2, 1);
+        assert_eq!(-5%2, -1);
+        let a: i32 = -5;
+        assert_eq!(a.modulo(2), 1);
+    }
+
+
+    #[test]
     #[ignore]   //big numbers: can be slow (~10 seconds)
     fn prime_factorize() {
         fn is_prime_naive(n: u32) -> bool {
@@ -48,6 +58,8 @@ mod tests {
         assert_eq!( 1, math::gcd(42i32, 7919i32));
         assert_eq!( 1, math::gcd(61157u32, 32414u32));
         assert_eq!(42, math::gcd((42*61157) as u64, (42*32414) as u64));
+
+        assert_eq!( 1, math::gcd(14, -15));
     }
 
     #[test]
@@ -110,9 +122,9 @@ mod tests {
                                     (-373, 297),  (952, 815), (699, 784),  (255, 922)];
 
         for (a,p) in v {
-            println!("TEST!");
+            println!("\n\n\nTEST!");
             let y = math::mult_inverse_signed(a,p);
-            assert!(y > 0);
+            //assert!(y > 0);
             let x: i32 = NumCast::from(y).unwrap();
             println!("guessing solution: a*y ≡ 1 (mod p)  ↔  {}*y ≡ 1 (mod {})  ↔  {}*{} ≡ 1 (mod {})", a, p, a, x, p);
             //println!("a*x %p: {}", (a*x)%p as i32);

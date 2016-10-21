@@ -12,7 +12,7 @@
 
 pub mod math {
     extern crate num;
-    use self::num::traits::{Num, NumCast, Unsigned};
+    use self::num::traits::{Num, NumCast, Unsigned, /*CheckedMul*/};
     use std::cmp::PartialOrd;
 
     use std::mem;
@@ -22,14 +22,40 @@ pub mod math {
     pub type Output = i32;
 
 
+    pub trait Mod<T: Mod<T>> : Num + Copy { 
+        fn modulo(self, n: T) -> T;
+
+
+        //fn mod<T: Num+Copy>(a: T, b: T) -> T {
+        //fn mod_<T: Mod>(self, n: T) -> T;
+        //fn mod_<T: Mod>(self, n: T) -> T {
+        //    //self.foo();
+        //    ((self%n)+n)%n
+        //}
+    }
+
+
+    impl<T: Mod<T>> Mod<T> for T  {
+        //type Output = Mod;
+        //fn mod_<T: Mod>(self, n: T) -> T { n }
+        //fn modulo<S: Mod>(self, n: S) -> S { 
+        fn modulo(self, n: T) -> T { 
+            //n 
+            self%n
+        }
+    }
+
+
     //misc math functions that don't exist or aren't generic
     pub fn modulo<T: Num+Copy>(a: T, b: T) -> T {
         ((a%b)+b)%b
     }
-    pub fn abs<T: Num+PartialOrd>(a: T) -> T {
+    //pub fn abs<T: Num + PartialOrd + CheckedMul>(a: T) -> Option<T> {
+    pub fn abs<T: Num + PartialOrd>(a: T) -> T {
         if a >= T::zero() {
             a
         } else {
+            //a.checked_mul(&(T::zero() - T::one())).unwrap()
             a * (T::zero() - T::one())
         }
     }
@@ -49,7 +75,8 @@ pub mod math {
             x 
         } else {
             let (a,b) = if x>y { (x,y) } else { (y,x) };
-            gcd(b, a%b)
+            //gcd(b, a%b)
+            gcd(b, modulo(a,b))
         }
     }
 
@@ -64,16 +91,46 @@ pub mod math {
         //make `a` positive type T
     pub fn mult_inverse_signed<S: NumCast+Copy+PartialOrd+Num, 
                       T: Unsigned+NumCast+Copy+PartialOrd+Num>(a: S, n: T) -> Output {
-        
+        //should modulo be unsigned?
+        //  Y:  + can check sign at compile time
+        //      - must convert `a` to corresponding positive value first
+        //  N:  + easier? just assert it's positive and then call eea() normally?
+        //      - must cast everything to `Output` first? (ext_euclid requires same type)
+        /*
+        let a_: Output = NumCast::from(a).unwrap();
+        let n_: Output = NumCast::from(n).unwrap();
+        assert!(coprime(a_,n_));
+        let (mut x,_) = ext_euclidean_alg(a_,n_);
+        println!("_\tx={}", x);
+        if a <= S::zero() {
+            //input negative
+            println!("pathCCC");
+            x *= -1;
+        }
+        if x>=0 { 
+            println!("pathAAA");
+            x 
+        } else { 
+            println!("pathBBB");
+            //n_+x 
+            x
+        }
+        */
+        0
+        //should be pretty similar to mult_inverse
+        //gcd will be fine, because it just takes the absolute value
+        //assert!(coprime(NumCast::from(a).unwrap(),NumCast::from(n).unwrap()));
+        //let (x,_) = ext_euclidean_alg(a,n);
+        //let n: Output = NumCast::from(n).unwrap();
+
+        /*
         let a_: Output = NumCast::from(a).unwrap();  // might be negative
         let n_: Output = NumCast::from(n).unwrap();
         let a__ = modulo(a_, n_);
-        assert!(a__ > 0);
-
+        assert!(a__ > 0); 
         let _a: u32 = NumCast::from(a__).unwrap();
         let _n: u32 = NumCast::from(n_).unwrap();
-
-        mult_inverse(_a, _n)
+        mult_inverse(_a, _n) */
     }
 
     //pub fn mult_inverse<T: NumCast+Unsigned>(a: T, n: T) -> Output {
@@ -83,8 +140,6 @@ pub mod math {
         assert!(coprime(a,n));
         //perform extended euclidean algorithm
         let (x,_) = ext_euclidean_alg(a,n);
-        //make sure we can cast modulus to the Output type
-        let n: Output = NumCast::from(n).unwrap();
         // x*a + y*p = 1
         // thus x*a (mod n) = 1 or -1
         if x >= 0 { 
@@ -94,6 +149,8 @@ pub mod math {
         } else { 
             // then x*a is negative and y*p is positive
             // so x*a (mod n) < 0; wrap around by adding `n`
+            //make sure we can cast modulus to the Output type
+            let n: Output = NumCast::from(n).unwrap();
             n+x
         }
     }
@@ -130,7 +187,8 @@ pub mod math {
             //r_old gets removed, r_new replaces it, calculate new r_new
             mem::swap(&mut r_old, &mut r_new);
             q = r_new / r_old;      // read: r_old div r_new
-            r_new = r_new % r_old;  // read: r_old mod r_new
+            //r_new = r_new % r_old;  // read: r_old mod r_new
+            r_new = modulo(r_new, r_old);  // read: r_old mod r_new
 
             if r_new == 0 { break }
 
@@ -158,13 +216,15 @@ pub mod math {
         sieve.resize(max as usize, false);
         let mut factors = Vec::<(u32,u32)>::new();
         for i in 2_u32 .. max {
-            if sieve.get(i as usize) == Some(&false) && n%i == 0 {
+            //if sieve.get(i as usize) == Some(&false) && n%i == 0 {
+            if sieve.get(i as usize) == Some(&false) && modulo(n,i) == 0 {
                 //`i` is prime and divides what's left of `n`
                 let mut exp: u32 = 0;
                 loop {
                     n /= i;
                     exp += 1;
-                    if n%i != 0 { break }
+                    //if n%i != 0 { break }
+                    if modulo(n,i) != 0 { break }
                 }
                 factors.push((i, exp));
                 if n == 1 { break }
