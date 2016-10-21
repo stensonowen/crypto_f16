@@ -14,6 +14,7 @@ pub mod math {
     extern crate num;
     use self::num::traits::{Num, NumCast, Unsigned, /*CheckedMul*/};
     use std::cmp::PartialOrd;
+    use std::ops::{Add, Rem};
 
     use std::mem;
 
@@ -22,28 +23,20 @@ pub mod math {
     pub type Output = i32;
 
 
-    pub trait Mod<T: Mod<T>> : Num + Copy { 
-        fn modulo(self, n: T) -> T;
-
-
-        //fn mod<T: Num+Copy>(a: T, b: T) -> T {
-        //fn mod_<T: Mod>(self, n: T) -> T;
-        //fn mod_<T: Mod>(self, n: T) -> T {
-        //    //self.foo();
-        //    ((self%n)+n)%n
-        //}
+    //Define modulus operator on all numbers
+    //deals with negative numbers correctly
+    // a mod n  ↔  a.modulo(n)
+    //  `a` and `n` must be the same type
+    //  type must support Copy and Rem/Add operators
+    pub trait Mod<T> {
+        fn modulo(self, n: T) -> T ;
     }
-
-
-    impl<T: Mod<T>> Mod<T> for T  {
-        //type Output = Mod;
-        //fn mod_<T: Mod>(self, n: T) -> T { n }
-        //fn modulo<S: Mod>(self, n: S) -> S { 
-        fn modulo(self, n: T) -> T { 
-            //n 
-            self%n
+    impl<T> Mod<T> for T where T: Rem<Output=T> + Add<Output=T> + Copy {
+        fn modulo(self, n: T) -> T {
+            ((self%n)+n)%n
         }
     }
+
 
 
     //misc math functions that don't exist or aren't generic
