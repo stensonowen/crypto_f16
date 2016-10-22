@@ -18,8 +18,8 @@ mod tests {
         assert_eq!(5%2, 1);
         assert_eq!(-5%2, -1);
         let a: i32 = -5;
-        assert_eq!(a.modulo(2), 1);
-        assert_eq!((-5).modulo(2), 1);
+        assert_eq!(a.mod_(2), 1);
+        assert_eq!((-5).mod_(2), 1);
         //vector of tests: v.i.0 mod v.i.1 = v.i.2
         let v: Vec<(i32,i32,i32)> = vec![(-98, 308, 210), (-443, 363, 283), (-413, 443, 30), 
                                         (-96, 59, 22),    (-268, 24, 20),   (-449, 414, 379), 
@@ -32,7 +32,7 @@ mod tests {
                                         (-316, 301, 286), (-26, 97, 71),    (-16, 156, 140), 
                                         (-127, 193, 66),  (-446, 170, 64),  (-404, 216, 28) ];
         for (a,b,c) in v {
-            assert_eq!(a.modulo(b), c);
+            assert_eq!(a.mod_(b), c);
         }
     }
 
