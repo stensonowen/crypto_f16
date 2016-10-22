@@ -28,35 +28,30 @@ pub mod math {
     // a mod n  ↔  a.modulo(n)
     //  `a` and `n` must be the same type
     //  type must support Copy and Rem/Add operators
-    // What should the function be called?
-    //  `mod` is ideal but is a reserved keyword
-    //  `modulo` is kind of long
-    //  `mod_`? `m0d`??
     pub trait Mod<T> {
-        fn mod_(self, n: T) -> T ;
+        fn modulo(self, n: T) -> T ;
     }
     impl<T> Mod<T> for T where T: Rem<Output=T> + Add<Output=T> + Copy {
-        fn mod_(self, n: T) -> T {
+        fn modulo(self, n: T) -> T {
             ((self%n)+n)%n
         }
     }
 
+
+
     //misc math functions that don't exist or aren't generic
-    //pub fn modulo<T: Num+Copy>(a: T, b: T) -> T {
-    //    ((a%b)+b)%b
-    //}
+    pub fn modulo<T: Num+Copy>(a: T, b: T) -> T {
+        ((a%b)+b)%b
+    }
     //pub fn abs<T: Num + PartialOrd + CheckedMul>(a: T) -> Option<T> {
-    //pub fn abs<T: Num + PartialOrd + Neg<Output=T>>(a: T) -> Option<T> {
     pub fn abs<T: Num + PartialOrd>(a: T) -> T {
         if a >= T::zero() {
             a
         } else {
             //a.checked_mul(&(T::zero() - T::one())).unwrap()
-            //-a
             a * (T::zero() - T::one())
         }
     }
-
 
     pub fn gcd<T: Num + PartialOrd + Copy>(mut x: T, mut y: T) -> T {
         // Euclidean Algorithm
@@ -74,8 +69,7 @@ pub mod math {
         } else {
             let (a,b) = if x>y { (x,y) } else { (y,x) };
             //gcd(b, a%b)
-            //gcd(b, modulo(a,b))
-            gcd(b, a.mod_(b))
+            gcd(b, modulo(a,b))
         }
     }
 
@@ -95,23 +89,41 @@ pub mod math {
         //      - must convert `a` to corresponding positive value first
         //  N:  + easier? just assert it's positive and then call eea() normally?
         //      - must cast everything to `Output` first? (ext_euclid requires same type)
+        /*
         let a_: Output = NumCast::from(a).unwrap();
         let n_: Output = NumCast::from(n).unwrap();
-        let a_2 = a_.mod_(n_);
-        //let a: T = NumCast::from(a_.mod_(n_)).unwrap();
-        assert!(coprime(a_2,n_));
-        let (x,_) = ext_euclidean_alg(a_2, n_);
-        println!("\ta is {}", if a_>=0 { "positive" } else { "negative" });
-        println!("\tx is {}", if x>=0 { "positive" } else { "negative" });
-        if x <= 0 && a_ >= 0 {
-            n_+x
-        } else if x >= 0 && a_ <= 0 {
-            x
-        } else {
+        assert!(coprime(a_,n_));
+        let (mut x,_) = ext_euclidean_alg(a_,n_);
+        println!("_\tx={}", x);
+        if a <= S::zero() {
+            //input negative
+            println!("pathCCC");
+            x *= -1;
+        }
+        if x>=0 { 
+            println!("pathAAA");
+            x 
+        } else { 
+            println!("pathBBB");
+            //n_+x 
             x
         }
+        */
+        0
+        //should be pretty similar to mult_inverse
+        //gcd will be fine, because it just takes the absolute value
+        //assert!(coprime(NumCast::from(a).unwrap(),NumCast::from(n).unwrap()));
+        //let (x,_) = ext_euclidean_alg(a,n);
+        //let n: Output = NumCast::from(n).unwrap();
 
-
+        /*
+        let a_: Output = NumCast::from(a).unwrap();  // might be negative
+        let n_: Output = NumCast::from(n).unwrap();
+        let a__ = modulo(a_, n_);
+        assert!(a__ > 0); 
+        let _a: u32 = NumCast::from(a__).unwrap();
+        let _n: u32 = NumCast::from(n_).unwrap();
+        mult_inverse(_a, _n) */
     }
 
     //pub fn mult_inverse<T: NumCast+Unsigned>(a: T, n: T) -> Output {
@@ -169,8 +181,7 @@ pub mod math {
             mem::swap(&mut r_old, &mut r_new);
             q = r_new / r_old;      // read: r_old div r_new
             //r_new = r_new % r_old;  // read: r_old mod r_new
-            //r_new = modulo(r_new, r_old);  // read: r_old mod r_new
-            r_new = r_new.mod_(r_old);  // read: r_old mod r_new
+            r_new = modulo(r_new, r_old);  // read: r_old mod r_new
 
             if r_new == 0 { break }
 
@@ -199,16 +210,14 @@ pub mod math {
         let mut factors = Vec::<(u32,u32)>::new();
         for i in 2_u32 .. max {
             //if sieve.get(i as usize) == Some(&false) && n%i == 0 {
-            //if sieve.get(i as usize) == Some(&false) && modulo(n,i) == 0 {
-            if sieve.get(i as usize) == Some(&false) && n.mod_(i) == 0 {
+            if sieve.get(i as usize) == Some(&false) && modulo(n,i) == 0 {
                 //`i` is prime and divides what's left of `n`
                 let mut exp: u32 = 0;
                 loop {
                     n /= i;
                     exp += 1;
                     //if n%i != 0 { break }
-                    //if modulo(n,i) != 0 { break }
-                    if n.mod_(i) != 0 { break }
+                    if modulo(n,i) != 0 { break }
                 }
                 factors.push((i, exp));
                 if n == 1 { break }
