@@ -37,12 +37,6 @@ pub mod math {
         }
     }
 
-
-
-    //misc math functions that don't exist or aren't generic
-    pub fn modulo<T: Num+Copy>(a: T, b: T) -> T {
-        ((a%b)+b)%b
-    }
     //pub fn abs<T: Num + PartialOrd + CheckedMul>(a: T) -> Option<T> {
     pub fn abs<T: Num + PartialOrd>(a: T) -> T {
         if a >= T::zero() {
@@ -56,7 +50,6 @@ pub mod math {
     pub fn gcd<T: Num + PartialOrd + Copy>(mut x: T, mut y: T) -> T {
         // Euclidean Algorithm
         // generic over all primitive numeric types
-        //println!("gcd( {:?} , {:?} )", x, y);
         //let a = x * (T::zero() - T::one());
         //if inputs are negative, take the absolute value
         x = abs(x);
@@ -69,7 +62,7 @@ pub mod math {
         } else {
             let (a,b) = if x>y { (x,y) } else { (y,x) };
             //gcd(b, a%b)
-            gcd(b, modulo(a,b))
+            gcd(b, a.modulo(b))
         }
     }
 
@@ -77,63 +70,33 @@ pub mod math {
         gcd(x,y) == T::one()
     }
 
-    //pub fn mult_inverse_signed<S: NumCast, T: NumCast+Unsigned>(a: S, n: T) -> Output {
-        //modulus must be positive
-        //for some of our logic we're going to assume `a` is also positive:
-        //
-        //make `a` positive type T
     pub fn mult_inverse_signed<S: NumCast+Copy+PartialOrd+Num, 
                       T: Unsigned+NumCast+Copy+PartialOrd+Num>(a: S, n: T) -> Output {
-        //should modulo be unsigned?
-        //  Y:  + can check sign at compile time
-        //      - must convert `a` to corresponding positive value first
-        //  N:  + easier? just assert it's positive and then call eea() normally?
-        //      - must cast everything to `Output` first? (ext_euclid requires same type)
-        /*
-        let a_: Output = NumCast::from(a).unwrap();
-        let n_: Output = NumCast::from(n).unwrap();
-        assert!(coprime(a_,n_));
-        let (mut x,_) = ext_euclidean_alg(a_,n_);
-        println!("_\tx={}", x);
-        if a <= S::zero() {
-            //input negative
-            println!("pathCCC");
-            x *= -1;
-        }
-        if x>=0 { 
-            println!("pathAAA");
-            x 
-        } else { 
-            println!("pathBBB");
-            //n_+x 
-            x
-        }
-        */
-        0
-        //should be pretty similar to mult_inverse
-        //gcd will be fine, because it just takes the absolute value
-        //assert!(coprime(NumCast::from(a).unwrap(),NumCast::from(n).unwrap()));
-        //let (x,_) = ext_euclidean_alg(a,n);
-        //let n: Output = NumCast::from(n).unwrap();
-
-        /*
-        let a_: Output = NumCast::from(a).unwrap();  // might be negative
-        let n_: Output = NumCast::from(n).unwrap();
-        let a__ = modulo(a_, n_);
-        assert!(a__ > 0); 
-        let _a: u32 = NumCast::from(a__).unwrap();
-        let _n: u32 = NumCast::from(n_).unwrap();
-        mult_inverse(_a, _n) */
+        //find some b=1/a such that a*b ≡ 1 (mod n)
+        //always returns a negative number b
+        //as such, the result requires that modulus is done with `Mod` trait and NOT `%`
+        //  otherwise a negative times a positive is always negative,
+        //  and a negative `%` a positive is also negative, 
+        //  and 1 is not negative.
+        
+        //to operate on `a` and `n` they must be of the same type
+        //cannot cast both to `S` or `T` because `a` might be <0 and `n` might be too big
+        let a_o: Output = NumCast::from(a).unwrap();
+        let n_o: Output = NumCast::from(n).unwrap();
+        assert!(coprime(a_o,n_o));
+        //now we can find some positive `a` for which we can use `mult_inverse`
+        
+        //this cast will always succeed because 0 ≤ `a mod n` < n
+        let a_t: T = NumCast::from(a_o.modulo(n_o)).unwrap();
+        mult_inverse(a_t, n)
     }
 
-    //pub fn mult_inverse<T: NumCast+Unsigned>(a: T, n: T) -> Output {
     pub fn mult_inverse<T: NumCast+Unsigned+Copy+PartialOrd>(a: T, n: T) -> Output {
         //find some b=1/a such that a*b ≡ 1 (mod n)
-        //inputs must be coprime
-        assert!(coprime(a,n));
+        assert!(coprime(a,n));  //inputs must be coprime
         //perform extended euclidean algorithm
         let (x,_) = ext_euclidean_alg(a,n);
-        // x*a + y*p = 1
+        // now x*a + y*p = 1
         // thus x*a (mod n) = 1 or -1
         if x >= 0 { 
             // then x*a is positive and y*p is negative
@@ -147,18 +110,6 @@ pub mod math {
             n+x
         }
     }
-    /*
-    pub fn mult_inverse(a: i32, n: i32) -> i32 {
-        //find b=a^-1 such that b*a ≡ 1 mod n
-        //place holder
-        assert!(coprime(a,n));
-        assert!(false);
-        0
-        //let (b, _) = ext_euclidean_alg(a, n);
-        //b
-        //this shouldn't work because we don't know if |ax|>|by| or |ax|<|by|
-        // pretty sure this could yield 1/a such that a*1/a = (n-1) mod n
-    }*/
 
     pub fn ext_euclidean_alg<T: NumCast>(a: T, b: T) -> (Output, Output) {
         //returns (x,y) such that ax+by = gcd(a,b)
@@ -172,16 +123,16 @@ pub mod math {
         let (mut r_old, mut r_new) = if in_order { (a,b) } else { (b,a) };
         let mut q: i32;
 
-        println!("\nr_i,\tq_i,\tx_i,\ty_i");
-        println!("{},\t{},\t{},\t{}", r_old, '_', x_old, y_old);
-        println!("{},\t{},\t{},\t{}", r_new, '_', x_new, y_new);
+        //println!("\nr_i,\tq_i,\tx_i,\ty_i");
+        //println!("{},\t{},\t{},\t{}", r_old, '_', x_old, y_old);
+        //println!("{},\t{},\t{},\t{}", r_new, '_', x_new, y_new);
 
         loop {
             //r_old gets removed, r_new replaces it, calculate new r_new
             mem::swap(&mut r_old, &mut r_new);
             q = r_new / r_old;      // read: r_old div r_new
             //r_new = r_new % r_old;  // read: r_old mod r_new
-            r_new = modulo(r_new, r_old);  // read: r_old mod r_new
+            r_new = r_new.modulo(r_old);  // read: r_old mod r_new
 
             if r_new == 0 { break }
 
@@ -191,7 +142,7 @@ pub mod math {
             mem::swap(&mut y_old, &mut y_new);
             y_new = y_new - y_old * q;
 
-            println!("{},\t{},\t{},\t{}", r_new, q, x_new, y_new);
+            //println!("{},\t{},\t{},\t{}", r_new, q, x_new, y_new);
         }
 
         if in_order { (x_new, y_new) } else { (y_new, x_new) }
@@ -210,14 +161,14 @@ pub mod math {
         let mut factors = Vec::<(u32,u32)>::new();
         for i in 2_u32 .. max {
             //if sieve.get(i as usize) == Some(&false) && n%i == 0 {
-            if sieve.get(i as usize) == Some(&false) && modulo(n,i) == 0 {
+            if sieve.get(i as usize) == Some(&false) && n.modulo(i) == 0 {
                 //`i` is prime and divides what's left of `n`
                 let mut exp: u32 = 0;
                 loop {
                     n /= i;
                     exp += 1;
                     //if n%i != 0 { break }
-                    if modulo(n,i) != 0 { break }
+                    if n.modulo(i) != 0 { break }
                 }
                 factors.push((i, exp));
                 if n == 1 { break }

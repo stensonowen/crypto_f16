@@ -9,6 +9,7 @@ extern crate num;
 #[cfg(test)]
 mod tests {
     use super::math::math;
+    use math::math::Mod;
     use super::num::traits::NumCast;
 
 
@@ -126,6 +127,7 @@ mod tests {
             assert!(y > 0);
             let x: u32 = NumCast::from(y).unwrap();
             assert_eq!((a*x)%p, 1);
+            assert_eq!((a*x).modulo(p), 1);
         }
     }
 
@@ -137,15 +139,10 @@ mod tests {
                                     (-373, 297),  (952, 815), (699, 784),  (255, 922)];
 
         for (a,p) in v {
-            println!("\n\n\nTEST!");
             let y = math::mult_inverse_signed(a,p);
-            //assert!(y > 0);
+            assert!(y > 0);
             let x: i32 = NumCast::from(y).unwrap();
-            println!("guessing solution: a*y ≡ 1 (mod p)  ↔  {}*y ≡ 1 (mod {})  ↔  {}*{} ≡ 1 (mod {})", a, p, a, x, p);
-            //println!("a*x %p: {}", (a*x)%p as i32);
-            //println!("__{}", (-219*457)%524);
-            //println!("-219*457 %' 524:  {}", math::modulo(-219*457, 524));
-            assert_eq!((a*x)%p as i32, 1);
+            assert_eq!((a*x).modulo(p as i32), 1);
         }
     }
 
