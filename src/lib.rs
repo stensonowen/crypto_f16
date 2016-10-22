@@ -8,11 +8,14 @@ extern crate num;
 
 #[cfg(test)]
 mod tests {
+    //math module
     use super::math::math;
+    //number traits
     use math::math::Mod;
     use super::num::traits::NumCast;
 
 
+    // Test the `modulo` operator
     #[test]
     fn mod_signed() {
         use math::math::Mod;
@@ -37,47 +40,34 @@ mod tests {
         }
     }
 
-
+    //test greatest common denominator
     #[test]
-    #[ignore]   //big numbers: can be slow (~10 seconds)
-    fn prime_factorize() {
-        fn is_prime_naive(n: u32) -> bool {
-            n > 1 && !(2 .. 1 + n/2).into_iter().any(|i| n%i==0) 
-        }
-        fn reform_from_prime_factors(f: Vec<(u32,u32)>) -> u32 {
-            f.into_iter().fold(1u32, |acc, (n,e)| acc*n.pow(e))
-        }
-
-        let vals = vec![22176180, 137235605, 912673, 47];
-        for i in vals {
-            let v = math::prime_factors(i);
-            println!("\n{:?}", v);
-            for &(j,_) in &v {
-                assert!(is_prime_naive(j));
-            }
-            assert_eq!(reform_from_prime_factors(v), i);
-        }
-    }
-
-    #[test]
-    fn gcd_base() {
+    fn gcd() {
+        //base case tests
         assert_eq!(0, math::gcd(0,0));
         assert_eq!(4, math::gcd(4,0));
         assert_eq!(4, math::gcd(0,4));
-    }
-
-    #[test]
-    fn gcd() {
+        //actual tests
         assert_eq!( 1, math::gcd(14u16, 15u16));
         assert_eq!( 7, math::gcd(14i64, 21i64));
         assert_eq!(13, math::gcd(13u8, 26u8));
         assert_eq!( 1, math::gcd(42i32, 7919i32));
         assert_eq!( 1, math::gcd(61157u32, 32414u32));
         assert_eq!(42, math::gcd((42*61157) as u64, (42*32414) as u64));
-
-        assert_eq!( 1, math::gcd(14, -15));
+        //negatives
+        assert_eq!( 1, math::gcd( 14, -15));
+        assert_eq!( 4, math::gcd(-36,  20));
+        assert_eq!( 1, math::gcd(-25, -33));    //correct? or -1?
+        assert_eq!( 3, math::gcd(-21,  48));
+        assert_eq!( 1, math::gcd(-11, -20));
+        assert_eq!( 1, math::gcd(  9, -13));
+        assert_eq!(43, math::gcd( 43, -43));
+        assert_eq!(13, math::gcd(-13,  26));
+        assert_eq!( 1, math::gcd(-27,  41));
+        assert_eq!( 4, math::gcd( 36, -16));
     }
 
+    //Extended Euclidean Algorithm
     #[test]
     fn ext_euclid_alg() {
         //common case: stallings p99
@@ -101,6 +91,7 @@ mod tests {
         assert_eq!(x*a + y*b, 1);
     }
 
+    //Make sure NumCasts::from().unwrap() catches numbers that are too large
     #[test]
     #[should_panic]
     fn ext_euclid_alg_exceed() {
@@ -110,8 +101,9 @@ mod tests {
     }
 
 
+    //Modular inverse
     #[test]
-    fn modular_inverse() {
+    fn modular_inverse_unsigned() {
         //be super sure
         //input tests: random coprime pairs 
         let v: Vec<(u32,u32)> = vec![(5,24),    (121, 133), (97,31),    (100, 199), (24,49), 
@@ -147,6 +139,28 @@ mod tests {
     }
 
 
+    //Find the prime factors of a number
+    //Shouldn't actually use this because it scales poorly
+    #[test]
+    #[ignore]   //big numbers: can be slow (~10 seconds)
+    fn prime_factorize() {
+        fn is_prime_naive(n: u32) -> bool {
+            n > 1 && !(2 .. 1 + n/2).into_iter().any(|i| n%i==0) 
+        }
+        fn reform_from_prime_factors(f: Vec<(u32,u32)>) -> u32 {
+            f.into_iter().fold(1u32, |acc, (n,e)| acc*n.pow(e))
+        }
+
+        let vals = vec![22176180, 137235605, 912673, 47];
+        for i in vals {
+            let v = math::prime_factors(i);
+            println!("\n{:?}", v);
+            for &(j,_) in &v {
+                assert!(is_prime_naive(j));
+            }
+            assert_eq!(reform_from_prime_factors(v), i);
+        }
+    }
     //  MISC BENCHMARKS:
 
     /*
