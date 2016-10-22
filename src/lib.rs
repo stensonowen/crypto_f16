@@ -9,12 +9,12 @@ extern crate num;
 #[cfg(test)]
 mod tests {
     use super::math::math;
-    use math::math::Mod;
     use super::num::traits::NumCast;
 
 
     #[test]
     fn mod_signed() {
+        use math::math::Mod;
         assert_eq!(5%2, 1);
         assert_eq!(-5%2, -1);
         let a: i32 = -5;
@@ -123,9 +123,9 @@ mod tests {
                                     (169, 165), (735, 703), (843, 407), (581, 876), (909, 989)];
         for (a,p) in v {
             let y = math::mult_inverse(a,p);
-            let a = a as i32;
-            let p = p as i32;
-            assert_eq!((a*y).mod_(p), 1);
+            assert!(y > 0);
+            let x: u32 = NumCast::from(y).unwrap();
+            assert_eq!((a*x)%p, 1);
         }
     }
 
@@ -139,8 +139,13 @@ mod tests {
         for (a,p) in v {
             println!("\n\n\nTEST!");
             let y = math::mult_inverse_signed(a,p);
+            //assert!(y > 0);
             let x: i32 = NumCast::from(y).unwrap();
-            assert_eq!((a*x).mod_(p as i32), 1);
+            println!("guessing solution: a*y ≡ 1 (mod p)  ↔  {}*y ≡ 1 (mod {})  ↔  {}*{} ≡ 1 (mod {})", a, p, a, x, p);
+            //println!("a*x %p: {}", (a*x)%p as i32);
+            //println!("__{}", (-219*457)%524);
+            //println!("-219*457 %' 524:  {}", math::modulo(-219*457, 524));
+            assert_eq!((a*x)%p as i32, 1);
         }
     }
 
