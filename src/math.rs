@@ -101,39 +101,19 @@ pub mod math {
         //let a: T = NumCast::from(a_.mod_(n_)).unwrap();
         assert!(coprime(a_2,n_));
         let (x,_) = ext_euclidean_alg(a_2, n_);
-        println!("\ta is {}", if a_>=0 { "positive" } else { "negative" });
-        println!("\tx is {}", if x>=0 { "positive" } else { "negative" });
-        if x <= 0 && a_ >= 0 {
-            n_+x
-        } else if x >= 0 && a_ <= 0 {
-            x
-        } else {
-            x
-        }
-
-
+        x
     }
 
     //pub fn mult_inverse<T: NumCast+Unsigned>(a: T, n: T) -> Output {
+    //TODO: should this be able to return a negative??
     pub fn mult_inverse<T: NumCast+Unsigned+Copy+PartialOrd>(a: T, n: T) -> Output {
         //find some b=1/a such that a*b ≡ 1 (mod n)
         //inputs must be coprime
         assert!(coprime(a,n));
         //perform extended euclidean algorithm
-        let (x,_) = ext_euclidean_alg(a,n);
         // x*a + y*p = 1
-        // thus x*a (mod n) = 1 or -1
-        if x >= 0 { 
-            // then x*a is positive and y*p is negative
-            // so x*a (mod n) ≡ 1
-            x 
-        } else { 
-            // then x*a is negative and y*p is positive
-            // so x*a (mod n) < 0; wrap around by adding `n`
-            //make sure we can cast modulus to the Output type
-            let n: Output = NumCast::from(n).unwrap();
-            n+x
-        }
+        let (x,_) = ext_euclidean_alg(a,n);
+        x
     }
     /*
     pub fn mult_inverse(a: i32, n: i32) -> i32 {
