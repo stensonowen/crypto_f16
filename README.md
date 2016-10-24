@@ -7,11 +7,11 @@ Rust is a pretty good choice for this. There will be definite slowdown in access
 
 Contents / To-do list 
 
-    * Modular arithmetic
-    * Prime testing / properties?
-    * SDES / DES / AES?
-    * PRNG / Entropy?
-    * RSA / ElGamal?
-    * Elliptic Curve Crypto
+* Modular arithmetic
+* Prime testing / properties?
+* SDES / DES / AES?
+* PRNG / Entropy?
+* RSA / ElGamal?
+* Elliptic Curve Crypto
 
 
