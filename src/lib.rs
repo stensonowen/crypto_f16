@@ -15,6 +15,8 @@ mod tests {
     use super::num::traits::NumCast;
 
 
+    //MODULAR ARITHMETIC tests
+
     // Test the `modulo` operator
     #[test]
     fn mod_signed() {
@@ -139,6 +141,8 @@ mod tests {
     }
 
 
+    //PRIME tests
+    
     //Find the prime factors of a number
     //Shouldn't actually use this because it scales poorly
     #[test]
@@ -161,6 +165,28 @@ mod tests {
             assert_eq!(reform_from_prime_factors(v), i);
         }
     }
+
+
+    //RAND tests
+    
+    //test basic LCM
+    #[test]
+    fn demo_lcg() {
+        use math::rand;
+        //demos taken from https://en.wikipedia.org/wiki/Linear_congruential_generator 
+        //https://en.wikipedia.org/wiki/File:Linear_congruential_generator_visualisation.svg
+        //let lcg = rand::LCG::from_lcg(9u32, 2u32, 0u32, 1u32);
+        let lcg = rand::LCG::from_mcg(9u32, 2u32, 1u32);
+        let expected = vec![2, 4, 8, 7, 5, 1];
+        let actual: Vec<u32> = lcg.into_iter().take(expected.len()).collect();
+        assert_eq!(expected, actual);
+
+        let lcg: rand::LCG<u32> = rand::LCG::from_lcg(9, 4, 1, 0);
+        let expected = vec![1, 5, 3, 4, 8, 6, 7, 2, 0];
+        let actual: Vec<u32> = lcg.into_iter().take(expected.len()).collect();
+        assert_eq!(expected, actual);
+    }
+
     //  MISC BENCHMARKS:
 
     /*

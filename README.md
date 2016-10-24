@@ -10,7 +10,7 @@ Contents / To-do list
 * Modular arithmetic (✓)
 * Prime testing / properties?
 * Classical Crypto?
-* SDES / DES / AES?
+* SDES / DES / AES? / Blowfish? / RC5?
 * PRNG / Entropy?
 * RSA / ElGamal?
 * Elliptic Curve Crypto

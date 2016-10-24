@@ -9,6 +9,7 @@
  */
 
 //mod primes;       //?
+pub mod rand;
 
 //Number traits
 extern crate num;
@@ -34,6 +35,7 @@ impl<T> Mod<T> for T where T: Rem<Output=T> + Add<Output=T> + Copy {
     fn modulo(self, n: T) -> T {
         ((self%n)+n)%n
     }
+    //efficient exponentiation here?
 }
 
 
