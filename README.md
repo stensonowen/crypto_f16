@@ -7,8 +7,9 @@ Rust is a pretty good choice for this. There will be definite slowdown in access
 
 Contents / To-do list 
 
-* Modular arithmetic
+* Modular arithmetic (✓)
 * Prime testing / properties?
+* Classical Crypto?
 * SDES / DES / AES?
 * PRNG / Entropy?
 * RSA / ElGamal?
