@@ -1,7 +1,7 @@
 //#![feature(test)]     //benchmark using nightly
 
 pub mod math;
-//mod des;
+//pub mod crypto;
 extern crate num;
 
 
@@ -9,16 +9,16 @@ extern crate num;
 #[cfg(test)]
 mod tests {
     //math module
-    use super::math::math;
+    use math;
     //number traits
-    use math::math::Mod;
+    use math::Mod;
     use super::num::traits::NumCast;
 
 
     // Test the `modulo` operator
     #[test]
     fn mod_signed() {
-        use math::math::Mod;
+        use math::Mod;
         assert_eq!(5%2, 1);
         assert_eq!(-5%2, -1);
         let a: i32 = -5;
