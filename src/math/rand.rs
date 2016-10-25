@@ -5,8 +5,6 @@ extern crate num;
 use self::num::traits::{Bounded, Unsigned};
 use super::Mod;
 use std::ops::{BitXor, BitAnd, BitOrAssign, Shl, Shr, ShrAssign};
-use std::ops::Add;
-use std::num::Wrapping;
 
 
 //Linear Congruential Generator
@@ -17,25 +15,22 @@ use std::num::Wrapping;
 //shortcut to not have to rewrite `Unsigned + Copy` a bunch of times
 pub trait LCGReqs : Unsigned + Copy {}
 impl<T> LCGReqs for T where T: Unsigned + Copy {}
-//impl<T> LCGReqs for T where Wrapping<T> {}
-
-struct GenericWrap<T: LCGReqs>( T );
 
 pub struct LCG<T: LCGReqs> {
-    modulus:    GenericWrap<T>,
-    multiplier: GenericWrap<T>,
-    increment:  GenericWrap<T>,
-    seed:       GenericWrap<T>,
+    modulus:    T,
+    multiplier: T,
+    increment:  T,
+    seed:       T,
 }
 
 impl<T: LCGReqs> LCG<T> {
     pub fn from_lcg(modulus: T, multiplier: T, increment: T, seed: T) -> Self {
         //linear congruential generator has multiplier and increment
         LCG {
-            modulus:    GenericWrap(modulus),
-            multiplier: GenericWrap(multiplier),
-            increment:  GenericWrap(increment),
-            seed:       GenericWrap(seed),
+            modulus:    modulus,
+            multiplier: multiplier,
+            increment:  increment,
+            seed:       seed,
         }
     }
     pub fn from_mcg(modulus: T, multiplier: T, seed: T) -> Self {
@@ -48,30 +43,25 @@ impl LCG<u32> {
     pub fn ansi_c() -> Self {
         //ANSI C rand function parameters:
         LCG {
-            modulus:    GenericWrap(2u32.pow(31)),
-            multiplier: GenericWrap(1103515245),
-            increment:  GenericWrap(12345),
-            seed:       GenericWrap(12345),
+            modulus:    2u32.pow(31),
+            multiplier: 1103515245,
+            increment:  12345,
+            seed:       12345,
         }
     }
 }
 
-impl<T> Add<T> for GenericWrap<T> where T: LCGReqs {
-    type Output = GenericWrap<T>;
-    fn add(self, rhs: GenericWrap<T>) -> Self::Output {
-        rhs
-    }
-}
 
 impl<T: LCGReqs> Iterator for LCG<T> {
     type Item = T;
     fn next(&mut self) -> Option<T> {
         //generate new value, modify `seed`
         //does not return the initial seed the first time
-        //let product = Wrapping(self.multiplier) * Wrapping(self.seed);
-        let a = self.multiplier + self.seed;
-        //self.seed = (self.multiplier * self.seed + self.increment).modulo(self.modulus);
-        Some(self.seed.0)
+        //TODO: if math overflows (like we want it to), that is a runtime error in Debug mode
+        //      pretty sure `num` doesn't support WrappingMul or anything
+        //      find some way to get Wrapping<T> working?
+        self.seed = (self.multiplier * self.seed + self.increment).modulo(self.modulus);
+        Some(self.seed)
     }
 }
 
