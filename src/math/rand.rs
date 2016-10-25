@@ -5,6 +5,8 @@ extern crate num;
 use self::num::traits::{Bounded, Unsigned};
 use super::Mod;
 use std::ops::{BitXor, BitAnd, BitOrAssign, Shl, Shr, ShrAssign};
+use std::ops::Add;
+use std::num::Wrapping;
 
 
 //Linear Congruential Generator
@@ -15,22 +17,25 @@ use std::ops::{BitXor, BitAnd, BitOrAssign, Shl, Shr, ShrAssign};
 //shortcut to not have to rewrite `Unsigned + Copy` a bunch of times
 pub trait LCGReqs : Unsigned + Copy {}
 impl<T> LCGReqs for T where T: Unsigned + Copy {}
+//impl<T> LCGReqs for T where Wrapping<T> {}
+
+struct GenericWrap<T: LCGReqs>( T );
 
 pub struct LCG<T: LCGReqs> {
-    modulus:    T,
-    multiplier: T,
-    increment:  T,
-    seed:       T,
+    modulus:    GenericWrap<T>,
+    multiplier: GenericWrap<T>,
+    increment:  GenericWrap<T>,
+    seed:       GenericWrap<T>,
 }
 
 impl<T: LCGReqs> LCG<T> {
     pub fn from_lcg(modulus: T, multiplier: T, increment: T, seed: T) -> Self {
         //linear congruential generator has multiplier and increment
         LCG {
-            modulus:    modulus,
-            multiplier: multiplier,
-            increment:  increment,
-            seed:       seed,
+            modulus:    GenericWrap(modulus),
+            multiplier: GenericWrap(multiplier),
+            increment:  GenericWrap(increment),
+            seed:       GenericWrap(seed),
         }
     }
     pub fn from_mcg(modulus: T, multiplier: T, seed: T) -> Self {
@@ -39,13 +44,34 @@ impl<T: LCGReqs> LCG<T> {
     }
 }
 
+impl LCG<u32> {
+    pub fn ansi_c() -> Self {
+        //ANSI C rand function parameters:
+        LCG {
+            modulus:    GenericWrap(2u32.pow(31)),
+            multiplier: GenericWrap(1103515245),
+            increment:  GenericWrap(12345),
+            seed:       GenericWrap(12345),
+        }
+    }
+}
+
+impl<T> Add<T> for GenericWrap<T> where T: LCGReqs {
+    type Output = GenericWrap<T>;
+    fn add(self, rhs: GenericWrap<T>) -> Self::Output {
+        rhs
+    }
+}
+
 impl<T: LCGReqs> Iterator for LCG<T> {
     type Item = T;
     fn next(&mut self) -> Option<T> {
         //generate new value, modify `seed`
         //does not return the initial seed the first time
-        self.seed = (self.multiplier * self.seed + self.increment).modulo(self.modulus);
-        Some(self.seed)
+        //let product = Wrapping(self.multiplier) * Wrapping(self.seed);
+        let a = self.multiplier + self.seed;
+        //self.seed = (self.multiplier * self.seed + self.increment).modulo(self.modulus);
+        Some(self.seed.0)
     }
 }
 
@@ -85,9 +111,7 @@ impl<T: MSeqReqs<T>> Iterator for MSequence<T> {
         let bit0: T = T::one() & self.state;
         let bit1: T = (two & self.state) >> T::one();
         let first_bit = bit0 ^ bit1;
-        //self.state = self.state >> T::one();
         self.state >>= T::one();
-        //self.state = self.state | first_bit;
         //want to `OR` self.state with first_bit
         //but T is generic and first_bit is either 0 or 1
         //ordinarily we'd Shl it by 7 or whatever, but we don't know its size

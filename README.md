@@ -9,6 +9,7 @@ Contents / To-do list
 
 * Modular arithmetic (✓)
 * Prime testing / properties?
+* PRNG generation (✓) / properties?
 * Classical Crypto?
 * SDES / DES / AES? / Blowfish? / RC5?
 * PRNG / Entropy?

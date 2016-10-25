@@ -204,6 +204,16 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
+    //test ANSI C lcm
+    #[test]
+    fn prng_ansi_c() {
+        use math::rand;
+        let prng = rand::LCG::ansi_c();
+        for i in prng.into_iter().take(5) {
+            println!("\t{}", i);
+        }
+    }
+
     //  MISC BENCHMARKS:
 
     /*
