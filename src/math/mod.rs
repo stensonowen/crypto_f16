@@ -28,6 +28,10 @@ pub type Output = i32;
 // a mod n  ↔  a.modulo(n)
 //  `a` and `n` must be the same type
 //  type must support Copy and Rem/Add operators
+//Apparently it can be bad practice to implement traits on primitives.
+// However I'm not going to change this because it is well defined 
+//  for all numeric types (and because it arguably should be in the 
+//  language in the first place)
 pub trait Mod<T> {
     fn modulo(self, n: T) -> T ;
 }
