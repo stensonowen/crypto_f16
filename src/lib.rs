@@ -1,7 +1,7 @@
 //#![feature(test)]     //benchmark using nightly
 
 pub mod math;
-//pub mod crypto;
+pub mod crypto;
 extern crate num;
 
 

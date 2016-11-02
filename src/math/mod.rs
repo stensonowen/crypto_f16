@@ -13,7 +13,7 @@ pub mod rand;
 
 //Number traits
 extern crate num;
-use self::num::traits::{Num, NumCast, Unsigned, /*CheckedMul*/};
+use self::num::traits::{Num, NumCast, Unsigned, /*Bounded,*/ /*CheckedMul*/};
 use std::cmp::PartialOrd;
 use std::ops::{Add, Rem};
 
@@ -34,12 +34,24 @@ pub type Output = i32;
 //  language in the first place)
 pub trait Mod<T> {
     fn modulo(self, n: T) -> T ;
+    fn exp(self, e: u32, n: T) -> T;
 }
 impl<T> Mod<T> for T where T: Rem<Output=T> + Add<Output=T> + Copy {
     fn modulo(self, n: T) -> T {
         ((self%n)+n)%n
     }
-    //efficient exponentiation here?
+    fn exp(self, e: u32, n: T) -> T {
+        // a.exp(b, c) = (a ** b) mod c
+        // exponent must be unsigned
+        //strat: (a*b) mod n ≡ (a mod n)*(b mod n)
+        //  calculating the mod at every iteration is O(n) but safe
+        //  calculating the mod at the end is O(1) but would probably overflow
+        //  square the appropriate number of times, calculating the mod each time
+        //      safe as long as n ≤ √T::MAX
+        //      TODO: verify this?
+
+        self
+    }
 }
 
 
