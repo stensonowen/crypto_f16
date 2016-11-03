@@ -5,6 +5,7 @@ extern crate num;
 use self::num::traits::{Bounded, Unsigned};
 use super::Mod;
 use std::ops::{BitXor, BitAnd, BitOrAssign, Shl, Shr, ShrAssign};
+//use std::fmt::Debug;
 
 
 //Linear Congruential Generator
@@ -60,6 +61,7 @@ impl<T: LCGReqs> Iterator for LCG<T> {
         //TODO: if math overflows (like we want it to), that is a runtime error in Debug mode
         //      pretty sure `num` doesn't support WrappingMul or anything
         //      find some way to get Wrapping<T> working?
+        //TODO: juts make this non-generic?
         self.seed = (self.multiplier * self.seed + self.increment).modulo(self.modulus);
         Some(self.seed)
     }

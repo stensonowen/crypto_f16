@@ -16,6 +16,7 @@ extern crate num;
 use self::num::traits::{Num, NumCast, Unsigned, /*Bounded,*/ /*CheckedMul*/};
 use std::cmp::PartialOrd;
 use std::ops::{Add, Rem};
+//use std::fmt::Debug;
 
 
 //Define the type that inflexible/non-generic functions return
@@ -36,7 +37,7 @@ pub trait Mod<T> {
     fn modulo(self, n: T) -> T ;
     fn exp(self, e: u32, n: T) -> T;
 }
-impl<T> Mod<T> for T where T: Rem<Output=T> + Add<Output=T> + Copy {
+impl<T> Mod<T> for T where T: Rem<Output=T> + Add<Output=T> + Copy + Num {
     fn modulo(self, n: T) -> T {
         ((self%n)+n)%n
     }
@@ -48,9 +49,26 @@ impl<T> Mod<T> for T where T: Rem<Output=T> + Add<Output=T> + Copy {
         //  calculating the mod at the end is O(1) but would probably overflow
         //  square the appropriate number of times, calculating the mod each time
         //      safe as long as n ≤ √T::MAX
-        //      TODO: verify this?
-
-        self
+        //      TODO: verify this? use `Bounded` trait?
+        //for now: this will panic in debug mode
+        let _: T = self * self;
+        
+        let mut pad: u32 = 0b1;         //read `e` one bit at a time
+        let mut acc: T = T::one();      //accumulator for temporary vals
+        let mut tmp: T = self;          //store lesser powers of `self`
+        let mut ones: u32 = 0;          //know when to stop early
+        while ones < e.count_ones() {
+            if e & pad != 0 {
+                //check through exponent digit by digit
+                //  (i.e. for each of the powers of 2 that sum to `e`)
+                // update the accumulator with this power of 2
+                acc = (acc * tmp).modulo(n);
+                ones += 1;
+            }
+            pad *= 2;
+            tmp = (tmp * tmp).modulo(n);
+        }
+        acc
     }
 }
 
@@ -71,7 +89,7 @@ pub fn abs<T: Num + PartialOrd>(a: T) -> T {
 }
 
 
-pub fn gcd<T: Num + PartialOrd + Copy>(mut x: T, mut y: T) -> T {
+pub fn gcd<T: Num + PartialOrd + Copy >(mut x: T, mut y: T) -> T {
     // Euclidean Algorithm
     // generic over all primitive numeric types
     //let a = x * (T::zero() - T::one());
