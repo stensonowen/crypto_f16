@@ -5,7 +5,7 @@
  */
 
 pub mod math;
-//pub mod crypto;
+pub mod crypto;
 extern crate num;
 
 
@@ -18,6 +18,29 @@ mod tests {
     use math::Mod;
     use super::num::traits::NumCast;
 
+    #[test]
+    fn ecc() {
+        use crypto::ecc;
+        let p1 = ecc::Point::new(1,2);
+        let p2 = ecc::Point::new(4,3);
+        let ecc = ecc::ECC::new(4, 4, 5);
+
+        assert!(ecc.contains(&p1));
+        assert!(ecc.contains(&p2));
+        assert_eq!(2, ecc.slope_between(&p1, &p2));
+
+        assert_eq!(ecc.add(&p1, &p2), ecc::Point::new(4,2));
+
+        //let mut p1 = p1;
+        //let mut p2 = p2;
+        //for _ in 0..10 {
+        //    println!("_");
+        //    let tmp = ecc.add(&p1, &p2);
+        //    println!("  `{:?}`  +  `{:?}`  =  `{:?}`", p1, p2, tmp);
+        //    p1 = p2;
+        //    p2 = tmp;
+        //}
+    }
 
     //MODULAR ARITHMETIC tests
 

@@ -109,6 +109,7 @@ pub fn gcd<T: Num + PartialOrd + Copy >(mut x: T, mut y: T) -> T {
 }
 
 pub fn coprime<T: Num + PartialOrd + Copy>(x: T, y: T) -> bool { 
+    //x == T::zero() || y == T::zero() || gcd(x,y) == T::one()
     gcd(x,y) == T::one()
 }
 
