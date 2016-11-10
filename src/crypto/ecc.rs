@@ -15,4 +15,17 @@ struct ECC {
 }
 
 
+impl ECC {
+    fn new(a: f64, b: f64, p: u64) -> ECC {
+        //modular exp?
+        assert!(4.0 * a.pow(3) + 27.0 * b.pow(2) != 0);
+        ECC {
+            a: a,
+            b: b,
+            p: p,
+        }
+
+    }
+
+}
 

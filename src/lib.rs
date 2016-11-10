@@ -1,4 +1,8 @@
 //#![feature(test)]     //benchmark using nightly
+/* TODO:
+ *  organize test cases better? like by module?
+ *  test more intelligently, i.e. corner cases not brute force
+ */
 
 pub mod math;
 //pub mod crypto;
@@ -46,11 +50,13 @@ mod tests {
     #[test] 
     fn modular_exp() {
         use math::Mod;
-        assert_eq!( 5.exp(10, 13), 12);    // (5**10) mod 13 ≡ 12
-        assert_eq!( 3u32.exp( 7, 13u32),  3u32);
-        assert_eq!( 5i64.exp(17, 79i64), 76i64);
-        assert_eq!(39u16.exp(79, 54u16), 27u16);
-        assert_eq!(  4i8.exp( 6,  14i8),   8i8);
+        assert_eq!( 5.mod_exp(10, 13), 12);    // (5**10) mod 13 ≡ 12
+        assert_eq!( 3u32.mod_exp( 7, 13u32),  3u32);
+        assert_eq!( 5i64.mod_exp(17, 79i64), 76i64);
+        assert_eq!(39u16.mod_exp(79, 54u16), 27u16);
+        assert_eq!(  4i8.mod_exp( 6,  14i8),   8i8);
+        assert_eq!(  4i8.mod_exp( 6,  14i8),   8i8);
+        assert_eq!(76f64.mod_exp( 9, 72f64), 64f64);
     }
 
     //test greatest common denominator

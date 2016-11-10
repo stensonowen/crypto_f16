@@ -35,13 +35,13 @@ pub type Output = i32;
 //  language in the first place)
 pub trait Mod<T> {
     fn modulo(self, n: T) -> T ;
-    fn exp(self, e: u32, n: T) -> T;
+    fn mod_exp(self, e: u32, n: T) -> T;
 }
 impl<T> Mod<T> for T where T: Rem<Output=T> + Add<Output=T> + Copy + Num {
     fn modulo(self, n: T) -> T {
         ((self%n)+n)%n
     }
-    fn exp(self, e: u32, n: T) -> T {
+    fn mod_exp(self, e: u32, n: T) -> T {
         // a.exp(b, c) = (a ** b) mod c
         // exponent must be unsigned
         //strat: (a*b) mod n ≡ (a mod n)*(b mod n)

@@ -6,6 +6,7 @@ use self::num::traits::{Bounded, Unsigned};
 use super::Mod;
 use std::ops::{BitXor, BitAnd, BitOrAssign, Shl, Shr, ShrAssign};
 //use std::fmt::Debug;
+//TODO: just make this non-generic??
 
 
 //Linear Congruential Generator
