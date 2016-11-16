@@ -109,8 +109,14 @@ pub fn gcd<T: Num + PartialOrd + Copy >(mut x: T, mut y: T) -> T {
 }
 
 pub fn coprime<T: Num + PartialOrd + Copy>(x: T, y: T) -> bool { 
-    //x == T::zero() || y == T::zero() || gcd(x,y) == T::one()
-    gcd(x,y) == T::one()
+    if x == T::one() || y == T::one() {
+        //or -1, right?
+        true
+    } else if x == T::zero() || y == T::zero() {
+        false
+    } else {
+        gcd(x,y) == T::one()
+    }
 }
 
 pub fn mult_inverse_signed<S: NumCast+Copy+PartialOrd+Num, 

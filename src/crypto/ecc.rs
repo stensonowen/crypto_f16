@@ -44,7 +44,6 @@ impl ECC {
             b: b,
             p: p,
         }
-
     }
 
     pub fn contains(&self, p: &Point) -> bool {
@@ -60,18 +59,19 @@ impl ECC {
             ((3*p1.x.mod_exp(2, self.p) + self.a), 2*p1.y)
         };
         //the value is `numer` / `denom` = `numer` * `denom`^{-1}
-        println!("DENOM: {}", denom);
+        println!("p1: {:?}, p2: {:?}, DENOM: {}", p1, p2, denom);
         let multiplicand: i64 = num::cast(math::mult_inverse_signed(denom, p)).unwrap();
-        println!("C");
         (numer*multiplicand).modulo(self.p)
     }
 
     pub fn add(&self, p1: &Point, p2: &Point) -> Point {
+        // x' = m^2 - x1 - x2
+        // y' = m(x1-x') - x1
         let m = self.slope_between(p1, p2);
         let x = (m.mod_exp(2, self.p) - p1.x - p2.x).modulo(self.p);
         let y = (m*(p1.x - x) - p1.y).modulo(self.p);
 
-        Point::new(x,y)
+        Point::new(x,-y)
     }
 }
 
