@@ -2,6 +2,29 @@
 // primality testing / factoring?
 
 use super::Mod;
+use rand;
+
+
+pub fn solovay_strassen(n: u64) -> bool {
+    // true ≡ (n is prime)
+    // false: composite or 0 
+    // err after i iters: 1-2/ln(i)
+    if n <= 1 {
+        return false
+    }
+    let _tmp = (n-1)/2;
+    
+    use rand::Rng;
+
+    let mut rng = rand::thread_rng();
+    let _x: u64 = rng.gen();
+
+    true
+}
+
+pub fn solovay_strassen_signed(n: i64) -> bool {
+    solovay_strassen(n.checked_abs().unwrap() as u64)
+}
 
 #[allow(dead_code)]
 pub fn prime_factors(mut n: u32) -> Vec<(u32,u32)> {

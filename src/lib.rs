@@ -7,6 +7,7 @@
 pub mod math;
 pub mod crypto;
 extern crate num;
+extern crate rand;
 
 
 
@@ -23,7 +24,9 @@ mod tests {
         use crypto::ecc;
         let p1 = ecc::Point::new(1,2);
         let p2 = ecc::Point::new(4,3);
+        //  y^2  =  x^3 + 4x + 4 (mod 5)
         let ecc = ecc::ECC::new(4, 4, 5);
+        // problematic for points { (4,3), (4.2) }
 
         //assert!(ecc.contains(&p1));
         //assert!(ecc.contains(&p2));

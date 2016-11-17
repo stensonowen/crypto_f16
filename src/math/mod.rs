@@ -8,8 +8,9 @@
  *  Otherwise return i64s? i32s?
  */
 
-//mod primes;       //?
+pub mod primes;       //?
 pub mod rand;
+pub mod legendre;
 
 //Number traits
 extern crate num;
